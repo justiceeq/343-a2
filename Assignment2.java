@@ -22,7 +22,7 @@ public class Assignment2 {
 
 		} catch (ClassNotFoundException e) {
 
-			//System.out.println("Where is your PostgreSQL JDBC Driver? Include in your library path!");
+			System.out.println("Where is your PostgreSQL JDBC Driver? Include in your library path!");
 			//e.printStackTrace();
 			return;
 
@@ -33,7 +33,7 @@ public class Assignment2 {
   public boolean connectDB(String URL, String username, String password){
 	  try {
 			//Make the connection to the database, ****** but replace "username" with your username ******
-			//System.out.println("*** Please make sure to replace 'username' with your cdf username in the jdbc connection string!!!");
+			System.out.println("*** Please make sure to replace 'username' with your cdf username in the jdbc connection string!!!");
 			connection = DriverManager.getConnection(URL, username, password);
 	if(connection!=null){
 		return true;
@@ -43,7 +43,7 @@ public class Assignment2 {
 
 		} catch (SQLException e) {
 
-			//System.out.println("Connection Failed! Check output console");
+			System.out.println("Connection Failed! Check output console");
 			//e.printStackTrace();
 			return false;
 		}
@@ -56,16 +56,20 @@ public class Assignment2 {
     
   public boolean insertCountry (int cid, String name, int height, int population) {
 	  try{
+		  System.out.println("#####inside insertCountry");
 		  sql=connection.createStatement();
 		  String sqlText;
 		  String sqlCheck;
 		  Boolean retVal;
-		  sqlCheck = "SELECT * FROM country WHERE cid =" + cid;
+		  sqlCheck = "SELECT * FROM a2.country WHERE cid =" + cid;
+		  System.out.println("sqlCheck "+sqlCheck+"\n");
 		  rs = sql.executeQuery(sqlCheck);
-		  if(rs.next())
+		  if(rs.next()){
+			  System.out.println("inside rs next if");
 			  retVal = false;
+		  }
 		  else{
-			  sqlText = "INSERT INTO country " + "VALUES(" + cid + ",'" + name + "'," + height + ","+ population + ")";
+			  sqlText = "INSERT INTO a2.country " + "VALUES(" + cid + ",'" + name + "'," + height + ","+ population + ")";
 			  System.out.println("Executing this command: \n" + sqlText + "\n");
 			  sql.executeUpdate(sqlText);
 			  retVal = true;
@@ -88,11 +92,12 @@ public class Assignment2 {
 		  String sqlText;
 		  
 		  sqlText = "SELECT *       " +
-                  " FROM ocean " +
+                  " FROM a2.ocean " +
 				  " WHERE oid = " + oid;
 		  System.out.println("Now executing the command: " + sqlText.replaceAll("\\s+", " ") + "\n");
        	  rs = sql.executeQuery(sqlText);
        	  if (rs != null){
+       		System.out.println("Inside rs not null");
        		  while (rs.next()){
        			  System.out.println(rs.getInt("oid") + ":" + rs.getString("oname") + ":" + rs.getInt("depth") +"\n");
        			  retVal = rs.getInt("oid") + ":" + rs.getString("oname") + ":" + rs.getInt("depth");
@@ -112,14 +117,18 @@ public class Assignment2 {
 
   public boolean deleteNeighbour(int c1id, int c2id){
 	  try{
+		  System.out.println("#####inside delete neighbor\n");
 		  Boolean retVal=false;
 		  sql = connection.createStatement();
-		  String sqlText;
-		  sqlText = "DELETE FROM neighbour WHERE (country =  " + c1id 
-				  + " AND neighbor = " + c2id + ") OR (country = " 
-				  + c2id + " AND neighbor = " + c1id +")";
-		  if (sql.execute(sqlText))
+		  String sqlText,sqlText2;
+		  sqlText = "DELETE FROM a2.neighbour WHERE country =  " + c1id 
+				  + " AND neighbor = " + c2id;
+		  sqlText2 = "DELETE FROM a2.neighbour WHERE country = " 
+				  + c2id + " AND neighbor = " + c1id;
+		  if (sql.executeUpdate(sqlText)!=0 && sql.executeUpdate(sqlText2)!=0){
+			  System.out.println("output true\n");
 			  retVal = true;
+   		  }
 		  System.out.println("deleteNeighbor " + "SELECT * FROM neighbour WHERE country =  " + c1id 
 				  + " AND neighbor = " + c2id 
 				  + " UNION SELECT * FROM neighbour WHERE country = " + c2id
@@ -140,15 +149,16 @@ public class Assignment2 {
 		  sql = connection.createStatement();
 		  String sqlText,sqlQuery;
 		  int height=0;
-		  sqlQuery = "SELECT * FROM country WHERE cid = "+ cid;
+		  sqlQuery = "SELECT * FROM a2.country WHERE cid = "+ cid;
 		  rs = sql.executeQuery(sqlQuery);
 		  if (rs != null){
        		  while (rs.next()){
        			  //System.out.println(rs.getInt("oid") + ":" + rs.getString("oname") + ":" + rs.getInt("depth") +"\n");
        			  height = rs.getInt("height");
+				System.out.println("height"+height+"\n");
        		  }
        	  }
-		  sqlText = "UPDATE country      " +
+		  sqlText = "UPDATE a2.country      " +
                   "   SET height = " + (height-decrH) + 
                   " WHERE  cid = " + cid; 
 		  System.out.println("Executing this command: \n" + sqlText.replaceAll("\\s+", " ") + "\n");
